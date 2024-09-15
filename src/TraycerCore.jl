@@ -9,7 +9,6 @@ using Base: @kwdef
 import Base: show, convert, push!, append!, iterate
 
 export SVector, SA, @SVector
-export normalize, norm, dot, cross
 export Material, NULL_MATERIAL, isnullmaterial, transmittance
 
 include("ray.jl")
