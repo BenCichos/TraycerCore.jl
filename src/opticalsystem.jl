@@ -2,6 +2,10 @@
     elements::Vector{AbstractOpticalElement{N}}
     rays::Vector{Ray{N}} = Ray{N}[]
     tracedrays::Vector{TracedRay{N}} = TracedRay{N}[]
+
+    function OpticalSystem(elements::Vector{AbstractOpticalElement{N}}, rays::Vector{Ray{N}}=Ray{N}[], tracedrays::Vector{TracedRay{N}}=TracedRay{N}[]) where {N}
+        new{N}(elements, rays, tracedrays)
+    end
 end
 
 elements(os::OpticalSystem) = os.elements
@@ -31,3 +35,8 @@ show(io::IO, os::OpticalSystem) = print(io,
         $(length(tracedrays(os))) traced rays
     """
 )
+
+
+export OpticalSystem
+export elements, rays, tracedrays, primitives, tracingtypes
+export push!, append!, reset!, empty!, replace!

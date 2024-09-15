@@ -24,3 +24,5 @@ function trace(os::OpticalSystem{N}; depth::Int=10, threshold_intensity::Float64
 end
 
 trace!(os::OpticalSystem; depth::Int=10, threshold_intensity::Float64=1e-5) = (replace!(os, trace(os, depth=depth, threshold_intensity=threshold_intensity)); return os)
+
+export trace!, trace

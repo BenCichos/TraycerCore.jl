@@ -35,3 +35,6 @@ function minintersection!(::MinIntersection, element::AbstractOpticalElement{N},
 end
 
 minintersection!(minintersection::MinIntersection, compound_element_primitive::CEP, ray::Ray{N}) where {N,CEP<:CompoundElementPrimitive{N}} = minintersection!(minintersection, compound_element_primitive.primitive_element, ray)
+
+export MinIntersection
+export distance!, update_index!, reset!, minintersection!

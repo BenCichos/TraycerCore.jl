@@ -53,3 +53,16 @@ end
 
 onintersect(::AbstractOpticalElement{N}, ::Ray{N}, ::Float64, ::SVector{N,Float64}) where {N} = nothing
 onintersect(compound_element_primitive::CEP, ray::Ray{N}, distance::Float64, normal::SVector{N,Float64}) where {N,CEP<:CompoundElementPrimitive{N}} = onintersect(primitive_element(compound_element_primitive), ray, distance, normal)
+
+export AbstractOpticalElement
+
+export PrimitiveElement
+export Object, Surface
+
+export CompoundElement
+export CompoundObject, CompoundSurface
+
+export CompoundElementPrimitive
+export primitive_element
+
+export primitives, tracingtypes, interface, isobject, normal, onintersect

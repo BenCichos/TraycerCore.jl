@@ -3,6 +3,7 @@ abstract type AbstractRay{N} end
 origin(ray::AR) where {AR<:AbstractRay} = ray.origin
 intensity(ray::AR) where {AR<:AbstractRay} = ray.intensity
 wavelength(ray::AR) where {AR<:AbstractRay} = ray.wavelength
+direction(ray::AR) where {AR<:AbstractRay} = ray.direction
 
 @kwdef struct Ray{N} <: AbstractRay{N}
     origin::SVector{N,Float64}
@@ -23,11 +24,9 @@ wavelength(ray::AR) where {AR<:AbstractRay} = ray.wavelength
 end
 
 origin(ray::Ray, distance::Float64) = origin(ray) + distance * direction(ray)
-direction(ray::Ray) = ray.direction
 index(ray::Ray) = ray.index
 external_indices(ray::Ray) = ray.external_indices
 wavelength(ray::Ray) = ray.wavelength
-wavelength(ray::Ray, newindex::Float64) = index(ray) * wavelength(ray) / newindex
 propagate(ray::Ray, distance::Float64) = Ray(origin(ray) + distance * direction(ray), direction(ray), intensity(ray), wavelength(ray), index(ray), external_indices(ray))
 isaligned(direction::SVector{N,Float64}, otherdirection::SVector{N,Float64}) where {N} = (dot(direction, otherdirection) > 0.0)
 isaligned(ray::Ray{N}, otherdirection::SVector{N,Float64}) where {N} = isaligned(direction(ray), otherdirection)
@@ -42,9 +41,20 @@ show(io::IO, sys::Ray) = print(io, "Ray($(origin(sys)), $(direction(sys)), $(int
 end
 
 TracedRay(ray::Ray{N}, destination::SVector{N,Float64}) where {N} = TracedRay(origin(ray), destination, wavelength(ray), intensity(ray))
-TracedRay(ray::Ray) = TracedRay(origin(ray), direction(ray), wavelength(ray), intensity(ray))
+TracedRay(ray::Ray) = TracedRay(origin(ray), origin(ray) + direction(ray), wavelength(ray), intensity(ray))
+TracedRay(ray::Ray, distance::Float64) = TracedRay(ray, origin(ray, distance))
 
 direction(traced_ray::TracedRay) = normalize(destination(traced_ray) - origin(traced_ray))
 destination(traced_ray::TracedRay) = traced_ray.destination
 
 show(io::IO, traced_ray::TracedRay) = print(io, "TracedRay($(origin(traced_ray)), $(destination(traced_ray)), $(wavelength(traced_ray)), $(intensity(traced_ray)))")
+
+
+export AbstractRay
+export origin, direction, intensity, wavelength
+
+export Ray
+export index, external_indices, propagate, isaligned
+
+export TracedRay
+export destination

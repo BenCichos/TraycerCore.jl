@@ -33,3 +33,5 @@ function recursivetrace(os::OpticalSystem{N}; depth::Int=10, threshold_intensity
     tracedrays(recursive_tracing_vector)
 end
 recursivetrace!(sys::OpticalSystem; depth::Int=10, threshold_intensity::Float64=1e-5) = (replace!(sys, recursivetrace(sys, depth=depth, threshold_intensity=threshold_intensity)); return sys)
+
+export recursivetrace!, recursivetrace

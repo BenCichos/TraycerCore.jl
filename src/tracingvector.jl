@@ -127,7 +127,10 @@ hasnewrays!(vector::RecursiveTracingVector, newrays::Bool) = (vector.hasnewrays 
 keeptracedrays(vector::RecursiveTracingVector) = vector.keeptracedrays
 
 function push!(vector::RecursiveTracingVector{N}, ray::Ray{N}) where {N}
-    hasnewrays(vector) && (traceablerays(vector)[2] = ray; return nothing)
+    if hasnewrays(vector)
+        traceablerays(vector)[2] = ray
+        return nothing
+    end
     hasnewrays!(vector, true)
     traceablerays(vector)[1] = ray
     nothing

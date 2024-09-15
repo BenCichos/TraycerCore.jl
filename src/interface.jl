@@ -3,7 +3,7 @@ abstract type AbstractInterface end
 material(interface::I) where {I<:AbstractInterface} = interface.material
 reflectance(interface::I) where {I<:AbstractInterface} = interface.reflectance
 transmittance(interface::I) where {I<:AbstractInterface} = interface.transmittance
-transmittance(interface::AbstractInterface, wavelength::Float64, distance::Float64) = transmittance(material(interface), wavelength, distance) * transmittance(interface)
+transmittance(interface::I, wavelength::Float64, distance::Float64) where {I<:AbstractInterface} = transmittance(material(interface), wavelength, distance)
 
 @kwdef struct Interface <: AbstractInterface
     material::Material
@@ -47,7 +47,6 @@ coatingmaterial(coatedinterface::CoatedInterface) = material(coatedinterface.coa
 thickness(coatedinterface::CoatedInterface) = coatedinterface.thickness
 transmittance(coatedinterface::CoatedInterface, wavelength::Float64, ::Float64) = transmittance(coatingmaterial(coatedinterface), wavelength, thickness(coatedinterface)) * transmittance(coatedinterface)
 
-
 convert(::Type{Interface}, m::Material) = Interface(m)
 convert(::Type{Interface}, n::Real) = Interface(n)
 
@@ -72,3 +71,15 @@ function indices!(indices::InterfaceIndices, interface::CoatedInterface, inciden
     indices.reflection = coatingmaterial(interface)(wavelength)
     return nothing
 end
+
+export AbstractInterface
+export material, reflectance, transmittance
+
+export Interface
+export NULL_INTERFACE, ConsumingInterface, ReflectiveInterface, TransmissiveInterface
+
+export CoatedInterface
+export coatingmaterial, thickness
+
+export InterfaceIndices
+export indices!
