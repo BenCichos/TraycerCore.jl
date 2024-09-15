@@ -52,21 +52,19 @@ function intersect!(tracingvector::V, intersection::Intersection, element::T, ra
             fresnel_reflectance * intensity(ray) * reflectance(element_interface),
             wavelength(ray),
             incident(intersection),
-            external_indices(ray)
-        )
-    )
+            external_indices(ray),
+        ))
 
     push!(tracingvector,
         Ray(
-            origin(ray, distance)),
+            origin(ray, distance),
             refract(normal(intersection), direction(ray), sin_incident, sin_transmitted, cos_incident, cos_transmitted),
             fresnel_transmittance * intensity(ray) * transmittance(element_interface, wavelength(ray), distance),
             wavelength(ray),
             refraction(intersection),
-            external_indices_vec
+            external_indices_vec,
         )
     )
-
     return nothing
 end
 

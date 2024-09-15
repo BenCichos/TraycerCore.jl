@@ -1,3 +1,8 @@
+name = "TraycerCore"
+uuid = "990ad897-f6e4-4b6a-9525-da7cf5de3c51"
+authors = ["“BenCichos” <“b.cichos@me.com”>"]
+version = "0.1.0"
+
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Refraction = "a85f0e34-77fa-494d-9980-9155dceff362"
