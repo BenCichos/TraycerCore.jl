@@ -20,7 +20,12 @@ function rotation_from_zaxis(u::SVector{3,<:Real})
     s_phi, c_phi = sincos(acos(u[1] / norm) / 2)
     Quaternion(c_theta, u[2] * s_theta, -u[1] * s_theta, 0) * Quaternion(c_phi, s_phi * _AXIS_Z)
 end
-export rotation_from_zaxis
+
+@inline rotation_to_zaxis(u::SVector{3,<:Real}) = inv(rotation_from_zaxis(u))
+
+function align_normal_plane_with_zaxis(normal::SVector{3,<:Real}, vector::SVector{3,<:Real})
+    inv(rotation_from_zaxis(normal)) * vector
+end
 
 function rotation_from_axis(axis::SVector{3,<:Real}, theta::Real)
     s, c = sincos(theta / 2)
@@ -36,4 +41,3 @@ end
 function rotate_vector(q::Quaternion, u::SVector{3,<:Real})
     SVector(imag_part(q * Quaternion(u) * conj(q)))
 end
-export rotate_vector
