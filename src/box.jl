@@ -17,87 +17,133 @@ export Box
 origin(box::Box) = box.origin
 size(box::Box) = box.size
 axis(box::Box) = box.axis
+bounds(box::Box) = (origin(box), origin(box) + size(box))
 hassize(box::Box) = !all(iszero, size(box))
 
-function isinside(box::Box{N}, vector::SVector{N,Float64}) where {N}
+@approx function isinside(box::Box{N}, vector::SVector{N,Float64}) where {N}
     hassize(box) || return false
-    axis_vector = inv(quaterniony(axis(box))) * (vector - origin(box))
+    axis_vector = invquaterniony(axis(box)) * (vector - origin(box))
 
     for point in axis_vector
-        @approx point < 0.0 && return false
+        point < 0.0 && return false
     end
 
     for (point, axis_size) in zip(axis_vector, size(box))
-        @approx point > axis_size && return false
+        point > axis_size && return false
     end
 
     return true
 end
 
-function onsurface(box::Box{N}, vector::SVector{N,Float64}) where {N}
-    axis_vector = inv(quaterniony(axis(box))) * (vector - origin(box))
+@approx function onsurface(box::Box{N}, vector::SVector{N,Float64}) where {N}
+    axis_vector = invquaterniony(axis(box)) * (vector - origin(box))
     for point in axis_vector
-        @approx point < 0.0 && return false
+        point < 0.0 && return false
     end
 
     for (point, axis_size) in zip(axis_vector, size(box))
-        @approx point > axis_size && return false
+        point > axis_size && return false
     end
 
     for (point, axis_size) in zip(axis_vector, size(box))
-        @approx point == 0 || point == axis_size && return true
+        point == 0 || point == axis_size && return true
     end
 
     return false
 end
 
-function normal(box::Box{2}, vector::SVector{2,Float64})
+@approx function normal(box::Box{2}, vector::SVector{2,Float64})
     x, y = size(box)
-    axis_vector = inv(quaterniony(axis(box))) * (vector - origin(box))
+    axis_vector = invquaterniony(axis(box)) * (vector - origin(box))
     normal_x, normal_y = 0.0, 0.0
-    if @approx axis_vector[1] == 0.0
+    if axis_vector.x == 0.0
         normal_x = -1.0
-    elseif @approx axis_vector[1] == x
+    elseif axis_vector[1] == x
         normal_x = 1.0
     end
-    if @approx axis_vector[2] == 0.0
+    if axis_vector[2] == 0.0
         normal_y = -1.0
-    elseif @approx axis_vector[2] == y
+    elseif axis_vector[2] == y
         normal_y = 1.0
     end
 
     quaterniony(axis(box)) * SA[normal_x, normal_y]
 end
 
-function normal(box::Box{3}, vector::SVector{3,Float64})
+@approx function normal(box::Box{3}, vector::SVector{3,Float64})
     x, y, z = size(box)
-    axis_vector = inv(quaterniony(axis(box))) * (vector - origin(box))
+    axis_vector = invquaterniony(axis(box)) * (vector - origin(box))
     normal_x, normal_y, normal_z = 0.0, 0.0, 0.0
-    if @approx axis_vector[1] == 0.0
+    if axis_vector.x == 0.0
         normal_x = -1.0
-    elseif @approx axis_vector[1] == x
+    elseif axis_vector.x == x
         normal_x = 1.0
     end
 
-    if @approx axis_vector[2] == 0.0
+    if axis_vector.y == 0.0
         normal_y = -1.0
-    elseif @approx axis_vector[2] == y
+    elseif axis_vector.y == y
         normal_y = 1.0
     end
 
-    if (@approx axis_vector[3] == 0.0)
+    if axis_vector.z == 0.0
         normal_y = -1.0
-    elseif (@approx axis_vector[3] == z)
+    elseif axis_vector.z == z
         normal_y = 1.0
     end
 
     quaternionz(axis(box)) * SA[normal_x, normal_y, normal_z]
 end
 
-function minintersection!(::MinIntersection, element::Box{2}, ray::Ray{2})
-    hassize(element) || return nothing
+@approx function minintersection!(minintersection::MinIntersection, box::Box{3}, ray::Ray{3})
+    hassize(box) || return nothing
+    box_invquaterion = invquaternionz(axis(box))
+    ray_direction = box_invquaterion * direction(ray)
+    ray_origin = box_invquaterion * (origin(ray) - origin(box))
+    bounds_box = bounds(box)
+    bounds(v::Float64, other::Bool=false) = @inbounds xor(signbit(v), other) ? bounds_box[2] : bounds_box[1]
 
+    inv_ray_direction = 1.0 ./ ray_direction
 
+    tmin = (bounds(ray_direction.x).x - ray_origin.x) * inv_ray_direction.x
+    tmax = (bounds(ray_direction.x, true).x - ray_origin.x) * inv_ray_direction.x
+    tymin = (bounds(ray_direction.y).y - ray_origin.y) * inv_ray_direction.y
+    tymax = (bounds(ray_direction.y, true).y - ray_origin.y) * inv_ray_direction.y
+    (tmin > tymax || tymin > tmax) && return nothing
+    tmin = max(tmin, tymin)
+    tmax = min(tmax, tymax)
+    tzmin = (bounds(ray_direction.z).z - ray_origin.z) * inv_ray_direction.z
+    tzmax = (bounds(ray_direction.z, true).z - ray_origin.z) * inv_ray_direction.z
+    (tmin > tzmax || tzmin > tmax) && return nothing
+    tmin = max(tmin, tzmin)
+    tmax = min(tmax, tzmax)
+
+    tmax > 0 || return nothing
+    tmin > 0 || return distance!(minintersection, tmax)
+    distance!(minintersection, tmin)
+end
+
+@approx function minintersection!(minintersection::MinIntersection, box::Box{2}, ray::Ray{2})
+    hassize(box) || return nothing
+    box_invquaterion = invquaterniony(axis(box))
+    ray_direction = box_invquaterion * direction(ray)
+    ray_origin = box_invquaterion * (origin(ray) - origin(box))
+    bounds_box = bounds(box)
+    bounds(v::Float64, other::Bool=false) = @inbounds xor(signbit(v), other) ? bounds_box[2] : bounds_box[1]
+
+    inv_ray_direction = 1.0 ./ ray_direction
+
+    tmin = (bounds(ray_direction.x).x - ray_origin.x) * inv_ray_direction.x
+    tmax = (bounds(ray_direction.x, true).x - ray_origin.x) * inv_ray_direction.x
+    tymin = (bounds(ray_direction.y).y - ray_origin.y) * inv_ray_direction.y
+    tymax = (bounds(ray_direction.y, true).y - ray_origin.y) * inv_ray_direction.y
+    (tmin > tymax || tymin > tmax) && return nothing
+    tmin = max(tmin, tymin)
+    tmax = min(tmax, tymax)
+
+    0 < tmax || return nothing
+    0 < tmin || return distance!(minintersection, tmax)
+    distance!(minintersection, tmin)
 end
 
 
@@ -135,7 +181,9 @@ function doesintersect(box1::Box{N}, box2::Box{N}) where {N}
     hassize(box2) || return false
     b1_edges = edges(box1)
     b2_edges = edges(box2)
-    any(edges -> doesintersect(edges[1], edges[2]), Iterators.product(b1_edges, b2_edges)) && return true
+    for (edge1, edge2) in Iterators.product(b1_edges, b2_edges)
+        doesintersect(edge1, edge2) && return true
+    end
     return false
 end
 
@@ -161,35 +209,37 @@ function edges(box::Box{3})
     edges
 end
 
-function doesintersect(edge1::NTuple{2,SVector{2,Float64}}, edge2::NTuple{2,SVector{2,Float64}})
+@approx function doesintersect(edge1::NTuple{2,SVector{2,Float64}}, edge2::NTuple{2,SVector{2,Float64}})
     p1, p2 = edge1
     p3, p4 = edge2
 
-    o1 = orientation(p1, p2, p3)
-    o2 = orientation(p1, p2, p4)
-    o3 = orientation(p3, p4, p1)
-    o4 = orientation(p3, p4, p2)
+    A = p2 - p1
+    B = p3 - p4
+    C = p1 - p3
 
-    o1 != o2 && o3 != o4 && return true
+    t_numerator = B[2] * C[1] - B[1] * C[2]
+    u_numerator = A[1] * C[2] - A[2]C[1]
+    denominator = A[2] * B[1] - A[1] * B[2]
 
-    o1 == 0 && onsegment(p1, p3, p2) && return true
-    o2 == 0 && onsegment(p1, p4, p2) && return true
-    o3 == 0 && onsegment(p3, p1, p4) && return true
-    o4 == 0 && onsegment(p3, p2, p4) && return true
+    if denominator > 0
+        (t_numerator < 0 || u_numerator < 0) && return false
+        (t_numerator > denominator || u_numerator > denominator) && return false
+        return true
+    end
 
-    return false
+    (t_numerator > 0 || u_numerator > 0) && return false
+    (t_numerator < denominator || u_numerator < denominator) && return false
+
+    t = t_numerator / denominator
+    u = u_numerator / denominator
+
+    p5 = p1 + t * A
+    p6 = p4 + u * B
+
+    norm(p6 - p5) == 0.0
 end
 
-onsegment(p::SVector{2,Float64}, q::SVector{2,Float64}, r::SVector{2,Float64}) = @approx min(p[1], r[1]) <= q[1] <= max(p[1], r[1]) && min(p[2], r[2]) ≤ q[2] ≤ max(p[2], r[2])
-
-function orientation(p::SVector{2,Float64}, q::SVector{2,Float64}, r::SVector{2,Float64})
-    val = (q[2] - p[2]) * (r[1] - q[1]) - (q[1] - p[1]) * (r[2] - q[2])
-    @approx val == 0.0 && return 0
-    @approx val >= 0 && return 1
-    return 2
-end
-
-function doesintersect(edge1::NTuple{2,SVector{3,Float64}}, edge2::NTuple{2,SVector{3,Float64}})
+@approx function doesintersect(edge1::NTuple{2,SVector{3,Float64}}, edge2::NTuple{2,SVector{3,Float64}})
     p11, p12 = edge1
     p21, p22 = edge2
 
@@ -206,26 +256,25 @@ function doesintersect(edge1::NTuple{2,SVector{3,Float64}}, edge2::NTuple{2,SVec
     numerator = dotqs * dotrs - dotqr * dotss
     denominator = dotrr * dotss - dotrs * dotrs
 
-    if @approx denominator < 0.0
-        @approx numerator < denominator && return false
-        @approx numerator > 0.0 && return false
+    if denominator < 0.0
+        numerator < denominator && return false
+        numerator > 0.0 && return false
         return true
     end
 
-    @approx numerator > denominator && return false
-    @approx numerator < 0.0 && return false
+    numerator > denominator && return false
+    numerator < 0.0 && return false
 
     t = numerator / denominator
     u = (dotqs + t * dotrs) / dotss
 
-    @approx 0.0 <= u <= 1.0 || return false
+    0.0 <= u <= 1.0 || return false
 
     p0 = p11 + t * r
     p1 = p21 + u * s
 
-    @approx norm(p0 - p1) == 0.0
+    norm(p0 - p1) == 0.0
 end
-export doesintersect
 
 function coordinates(box::Box{2})
     hassize(box) || return SVector{2}[]

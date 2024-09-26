@@ -28,6 +28,8 @@ include("trace.jl")
 include("recursivetrace.jl")
 include("box.jl")
 
-__init__() = set_approx!(1e-6)
+function __init__()
+    set_approx!(1e-6)
+end
 
 end
