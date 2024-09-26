@@ -146,7 +146,6 @@ end
     distance!(minintersection, tmin)
 end
 
-
 function join(box1::Box{2}, box2::Box{2})
     hassize(box1) || return box2
     hassize(box2) || return box1
@@ -181,8 +180,8 @@ function doesintersect(box1::Box{N}, box2::Box{N}) where {N}
     hassize(box2) || return false
     b1_edges = edges(box1)
     b2_edges = edges(box2)
-    for (edge1, edge2) in Iterators.product(b1_edges, b2_edges)
-        doesintersect(edge1, edge2) && return true
+    for (line_segment_1, line_segment_2) in Iterators.product(b1_edges, b2_edges)
+        doesintersect(line_segment_1, line_segment_2) && return true
     end
     return false
 end
@@ -209,9 +208,9 @@ function edges(box::Box{3})
     edges
 end
 
-@approx function doesintersect(edge1::NTuple{2,SVector{2,Float64}}, edge2::NTuple{2,SVector{2,Float64}})
-    p1, p2 = edge1
-    p3, p4 = edge2
+@approx function doesintersect(line_segment_1::NTuple{2,SVector{2,Float64}}, line_segment_2::NTuple{2,SVector{2,Float64}})
+    p1, p2 = line_segment_1
+    p3, p4 = line_segment_2
 
     A = p2 - p1
     B = p3 - p4
@@ -239,9 +238,9 @@ end
     norm(p6 - p5) == 0.0
 end
 
-@approx function doesintersect(edge1::NTuple{2,SVector{3,Float64}}, edge2::NTuple{2,SVector{3,Float64}})
-    p11, p12 = edge1
-    p21, p22 = edge2
+@approx function doesintersect(line_segment_1::NTuple{2,SVector{3,Float64}}, line_segment_2::NTuple{2,SVector{3,Float64}})
+    p11, p12 = line_segment_1
+    p21, p22 = line_segment_2
 
     r = p12 - p11
     s = p22 - p21
