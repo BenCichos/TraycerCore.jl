@@ -4,12 +4,12 @@ using Refraction: Material, isnullmaterial, NULL_MATERIAL, transmittance
 using StaticArrays: SVector, SA, @SVector
 using LinearAlgebra: normalize, norm, dot, cross
 using Quaternions: Quaternion, imag_part, conj
+using ApproximateRelations: @approx, set_approx!
 using Base: @kwdef
-using ApproximateRelations
 
 import Quaternions: Quaternion
 import Refraction: transmittance
-import Base: show, convert, push!, append!, iterate, :(*)
+import Base: show, convert, push!, append!, iterate, :(*), getproperty
 
 export SVector, SA, @SVector
 export Material, NULL_MATERIAL, isnullmaterial, transmittance
