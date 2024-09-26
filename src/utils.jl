@@ -1,43 +1,82 @@
+function findroots(a::Float64, b::Float64, c::Float64)
+    temp = b^2 - 4(a * c)
+    temp < 1e-10 && return 0.0, 0.0
+    return (-b - sqrt(temp)) / 2a, (-b + sqrt(temp)) / 2a
+end
+
+const AXIS2_X = @SVector [1, 0]
+const AXIS2_Y = @SVector [0, 1]
+
+const AXIS3_X = @SVector [1, 0, 0]
+const AXIS3_Y = @SVector [0, 1, 0]
+const AXIS3_Z = @SVector [0, 0, 1]
+
+function getproperty(sv::SVector{3}, s::Symbol)
+    s == :x && return sv[1]
+    s == :y && return sv[2]
+    s == :z && return sv[3]
+    throw(ErrorException("type $(typeof(sv)) has no field $s"))
+end
+
+function getproperty(sv::SVector{2}, s::Symbol)
+    s == :x && return sv[1]
+    s == :y && return sv[2]
+    throw(ErrorException("type $(typeof(sv)) has no field $s"))
+end
+
+Quaternion(v::SVector{2,<:Real}) = Quaternion(0, v[1], v[2], 0)
+Quaternion(r::Real, v::SVector{2,<:Real}) = Quaternion(r, v[1], v[2], 0.0)
 Quaternion(v::SVector{3,<:Real}) = Quaternion(0, v[1], v[2], v[3])
 Quaternion(r::Real, v::SVector{3,<:Real}) = Quaternion(r, v[1], v[2], v[3])
 
-const _AXIS_X = @SVector [1, 0, 0]
-const _AXIS_Y = @SVector [0, 1, 0]
-const _AXIS_Z = @SVector [0, 0, 1]
+SVector{2}(q::Quaternion) = SVector(q.v1, q.v2)
+SVector{3}(q::Quaternion) = SVector(q.v1, q.v2, q.v3)
 
-perpendicular_vector(v::SVector{2,<:Real}) = SVector(v[2], -v[1])
-perpendicular_vector(v::SVector{3,<:Real}) = SVector(v[3], -v[2], v[1])
+perpto(v::SVector{2,<:Real}) = SVector(v[2], -v[1])
+perpto(v::SVector{3,<:Real}) = SVector(v[3], -v[2], v[1])
 
-isparallel(u::SVector{3,<:Real}, v::SVector{3,<:Real}) = isone(dot(u, v))
-isorthogonal(u::SVector{3,<:Real}, v::SVector{3,<:Real}) = iszero(dot(u, v))
-isantiparallel(u::SVector{3,<:Real}, v::SVector{3,<:Real}) = isone(-dot(u, v))
+isparallel(u::SVector{N,<:Real}, v::SVector{N,<:Real}) where {N} = isone(dot(u, v))
+isorthogonal(u::SVector{N,<:Real}, v::SVector{N,<:Real}) where {N} = iszero(dot(u, v))
+isantiparallel(u::SVector{N,<:Real}, v::SVector{N,<:Real}) where {N} = isone(-dot(u, v))
 
-function rotation_from_zaxis(u::SVector{3,<:Real})
-    u = normalize(u)
-    norm = sqrt(u[1]^2 + u[2]^2)
-    iszero(norm) && return (isone(u[3]) ? Quaternion(1, 0, 0, 0) : Quaternion(0, 1, 0, 0))
-    s_theta, c_theta = sincos(acos(u[3]) / 2)
-    s_phi, c_phi = sincos(acos(u[1] / norm) / 2)
-    Quaternion(c_theta, u[2] * s_theta, -u[1] * s_theta, 0) * Quaternion(c_phi, s_phi * _AXIS_Z)
+*(q::Quaternion, v::SVector{N,<:Real}) where {N} = SVector{N}(q * Quaternion(v) * conj(q))
+
+function quaternion(from::SVector{3,<:Real}, onto::SVector{3,<:Real})
+    from, onto = normalize(from), normalize(onto)
+    sin_theta, cos_theta = sincos(acos(dot(from, onto)) / 2)
+    Quaternion(cos_theta, sin_theta * cross(from, onto))
 end
 
-@inline rotation_to_zaxis(u::SVector{3,<:Real}) = inv(rotation_from_zaxis(u))
-
-function align_normal_plane_with_zaxis(normal::SVector{3,<:Real}, vector::SVector{3,<:Real})
-    inv(rotation_from_zaxis(normal)) * vector
-end
-
-function rotation_from_axis(axis::SVector{3,<:Real}, theta::Real)
-    s, c = sincos(theta / 2)
-    Quaternion(c, s * axis)
-end
-
-function rotation_from_axis(axis::SVector{3,<:Real}, theta::Real, phi::Real)
+function quaternion(axis::SVector{3,<:Real}, theta::Real, phi::Real)
     s_theta, c_theta = sincos(theta / 2)
     s_phi, c_phi = sincos(phi / 2)
-    Quaternion(c_theta, s_theta * axis) * Quaternion(c_phi, s_phi * perpendicular_vector(axis))
+    Quaternion(c_theta, s_theta * axis) * Quaternion(c_phi, s_phi * perpto(axis))
 end
 
-function rotate_vector(q::Quaternion, u::SVector{3,<:Real})
-    SVector(imag_part(q * Quaternion(u) * conj(q)))
+function quaternion(from::SVector{2,<:Real}, onto::SVector{2,<:Real})
+    from, onto = normalize(from), normalize(onto)
+    sin_theta, cos_theta = sincos(acos(dot(from, onto)) / 2)
+    Quaternion(cos_theta, 0, 0, sin_theta)
 end
+
+rotate(vector::SVector{N,<:Real}, from::SVector{N,<:Real}, onto::SVector{N,<:Real}) where {N} = quaternion(from, onto) * vector
+invrotate(vector::SVector{N,<:Real}, from::SVector{N,<:Real}, onto::SVector{N,<:Real}) where {N} = quaternion(onto, from) * vector
+export rotate, invrotate
+
+@inline quaternionx(from::SVector{2,<:Real}) = quaternion(from, AXIS2_X)
+@inline quaterniony(from::SVector{2,<:Real}) = quaternion(from, AXIS2_Y)
+
+@inline quaternionx(from::SVector{3,<:Real}) = quaternion(from, AXIS3_X)
+@inline quaterniony(from::SVector{3,<:Real}) = quaternion(from, AXIS3_Y)
+@inline quaternionz(from::SVector{3,<:Real}) = quaternion(from, AXIS3_Z)
+
+@inline invquaternionx(from::SVector{2,<:Real}) = quaternion(from, AXIS2_X)
+@inline invquaterniony(from::SVector{2,<:Real}) = quaternion(from, AXIS2_Y)
+
+@inline invquaternionx(from::SVector{3,<:Real}) = quaternion(from, AXIS3_X)
+@inline invquaterniony(from::SVector{3,<:Real}) = quaternion(from, AXIS3_Y)
+@inline invquaternionz(from::SVector{3,<:Real}) = quaternion(from, AXIS3_Z)
+
+@inline rotx(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaternionx(from) * vector
+@inline roty(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaterniony(from) * vector
+@inline rotz(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaternionz(from) * vector

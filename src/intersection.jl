@@ -1,11 +1,11 @@
 mutable struct Intersection{N}
+    const indices::InterfaceIndices
     point::SVector{N,Float64}
     normal::SVector{N,Float64}
-    const indices::InterfaceIndices
     isobject::Bool
 end
 
-Intersection() = Intersection(SVector{3,Float64}(NaN, NaN, NaN), SVector{3,Float64}(NaN, NaN, NaN), InterfaceIndices(), false)
+Intersection() = Intersection(InterfaceIndices(), SVector{3,Float64}(NaN, NaN, NaN), SVector{3,Float64}(NaN, NaN, NaN), false)
 
 function intersection!(intersection::Intersection, element::T, point::SVector{N,Float64}, isobject::Bool) where {N,T<:AbstractOpticalElement{N}}
     intersection.point = point
@@ -67,8 +67,6 @@ function intersect!(tracingvector::V, intersection::Intersection, element::T, ra
     )
     return nothing
 end
-
-
 
 function trigonometry(normal::SVector{N,Float64}, direction::SVector{N,Float64}, incident::Float64, transmitted::Float64) where {N}
     sin_incident, sin_transmitted = snell(normal, direction, incident, transmitted)

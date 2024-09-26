@@ -52,7 +52,13 @@ function normal(element::AbstractOpticalElement)
 end
 
 onintersect(::AbstractOpticalElement{N}, ::Ray{N}, ::Float64, ::SVector{N,Float64}) where {N} = nothing
-onintersect(compound_element_primitive::CEP, ray::Ray{N}, distance::Float64, normal::SVector{N,Float64}) where {N,CEP<:CompoundElementPrimitive{N}} = onintersect(primitive_element(compound_element_primitive), ray, distance, normal)
+onintersect(c::CEP, r::Ray{N}, d::Float64, n::SVector{N,Float64}) where {N,CEP<:CompoundElementPrimitive{N}} = onintersect(primitive_element(c), r, d, n)
+
+onsurface(::AbstractOpticalElement{N}, ::SVector{N, Float64}) where {N} = nothing
+onsurface(c::CEP, p::SVector{N,Float64}) where {N,CEP<:CompoundElementPrimitive{N}} = onsurface(primitive_element(c),p)
+
+isinside(::AbstractOpticalElement{N}, ::SVector{N, Float64}) where {N} = nothing
+isinside(c::CEP, p::SVector{N,Float64}) where {N,CEP<:CompoundElementPrimitive{N}} = isinside(primitive_element(c),p)
 
 export AbstractOpticalElement
 

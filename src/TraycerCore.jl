@@ -1,15 +1,15 @@
 module TraycerCore
 
+using Refraction: Material, isnullmaterial, NULL_MATERIAL, transmittance
 using StaticArrays: SVector, SA, @SVector
 using LinearAlgebra: normalize, norm, dot, cross
 using Quaternions: Quaternion, imag_part, conj
-import Quaternions: Quaternion
-
-using Refraction: Material, isnullmaterial, NULL_MATERIAL, transmittance
-import Refraction: transmittance
-
 using Base: @kwdef
-import Base: show, convert, push!, append!, iterate
+using ApproximateRelations
+
+import Quaternions: Quaternion
+import Refraction: transmittance
+import Base: show, convert, push!, append!, iterate, :(*)
 
 export SVector, SA, @SVector
 export Material, NULL_MATERIAL, isnullmaterial, transmittance
@@ -26,6 +26,8 @@ include("intersection.jl")
 include("minintersection.jl")
 include("trace.jl")
 include("recursivetrace.jl")
+include("box.jl")
 
+__init__() = set_approx!(1e-6)
 
 end
