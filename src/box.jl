@@ -309,4 +309,4 @@ end
 export Box
 export origin, size, axis, bounds, hassize
 
-export isinside, onsurface, normal, join, doesintersect,
+export isinside, onsurface, normal, join, doesintersect
