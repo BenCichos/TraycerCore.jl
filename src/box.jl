@@ -12,7 +12,6 @@
         new{3}(origin, size, axis, interface)
     end
 end
-export Box
 
 origin(box::Box) = box.origin
 size(box::Box) = box.size
@@ -186,28 +185,6 @@ function doesintersect(box1::Box{N}, box2::Box{N}) where {N}
     return false
 end
 
-function edges(box::Box{2})
-    hassize(box) || return SVector{2}[]
-    box_coordinates = coordinates(box)
-    map(i -> (box_coordinates[i-1], box_coordinates[i]), 2:length(box_coordinates))
-end
-
-function edges(box::Box{3})
-    hassize(box) || return SVector{3}[]
-    box_coordinates = coordinates(box)
-
-    edges = map(i -> (box_coordinates[i-1], box_coordinates[i]), 2:length(box_coordinates))
-
-    missing_edges = [
-        (box_coordinates[2], box_coordinates[7]),
-        (box_coordinates[3], box_coordinates[8]),
-        (box_coordinates[4], box_coordinates[9]),
-    ]
-
-    append!(edges, missing_edges...)
-    edges
-end
-
 @approx function doesintersect(line_segment_1::NTuple{2,SVector{2,Float64}}, line_segment_2::NTuple{2,SVector{2,Float64}})
     p1, p2 = line_segment_1
     p3, p4 = line_segment_2
@@ -306,3 +283,30 @@ function coordinates(box::Box{3})
     ]
     [quaternionz(axis(box)) * point + origin(box) for point in points]
 end
+
+function edges(box::Box{2})
+    hassize(box) || return SVector{2}[]
+    box_coordinates = coordinates(box)
+    map(i -> (box_coordinates[i-1], box_coordinates[i]), 2:length(box_coordinates))
+end
+
+function edges(box::Box{3})
+    hassize(box) || return SVector{3}[]
+    box_coordinates = coordinates(box)
+
+    edges = map(i -> (box_coordinates[i-1], box_coordinates[i]), 2:length(box_coordinates))
+
+    missing_edges = [
+        (box_coordinates[2], box_coordinates[7]),
+        (box_coordinates[3], box_coordinates[8]),
+        (box_coordinates[4], box_coordinates[9]),
+    ]
+
+    append!(edges, missing_edges...)
+    edges
+end
+
+export Box
+export origin, size, axis, bounds, hassize
+
+export isinside, onsurface, normal, join, doesintersect,
