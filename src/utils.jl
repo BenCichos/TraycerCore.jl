@@ -65,6 +65,7 @@ export rotate, invrotate
 
 @inline quaternionx(from::SVector{2,<:Real}) = quaternion(from, AXIS2_X)
 @inline quaterniony(from::SVector{2,<:Real}) = quaternion(from, AXIS2_Y)
+@inline quaternionz(from::SVector{2,<:Real}) = quaternion(from, AXIS2_Y)
 
 @inline quaternionx(from::SVector{3,<:Real}) = quaternion(from, AXIS3_X)
 @inline quaterniony(from::SVector{3,<:Real}) = quaternion(from, AXIS3_Y)
@@ -72,6 +73,7 @@ export rotate, invrotate
 
 @inline invquaternionx(from::SVector{2,<:Real}) = quaternion(AXIS2_X, from)
 @inline invquaterniony(from::SVector{2,<:Real}) = quaternion(AXIS2_Y, from)
+@inline invquaternionz(from::SVector{2,<:Real}) = quaternion(AXIS2_Y, from)
 
 @inline invquaternionx(from::SVector{3,<:Real}) = quaternion(AXIS3_X, from)
 @inline invquaterniony(from::SVector{3,<:Real}) = quaternion(AXIS3_Y, from)
