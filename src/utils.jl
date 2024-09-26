@@ -79,10 +79,17 @@ export rotate, invrotate
 @inline invquaterniony(from::SVector{3,<:Real}) = quaternion(AXIS3_Y, from)
 @inline invquaternionz(from::SVector{3,<:Real}) = quaternion(AXIS3_Z, from)
 
-@inline rotx(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaternionx(from) * vector
-@inline roty(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaterniony(from) * vector
-@inline rotz(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaternionz(from) * vector
+@inline rotatex(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaternionx(from) * vector
+@inline rotatey(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaterniony(from) * vector
+@inline rotatez(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaternionz(from) * vector
 
-@inline invrotx(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = invquaternionx(from) * vector
-@inline invroty(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = invquaterniony(from) * vector
-@inline invrotz(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = invquaternionz(from) * vector
+@inline invrotatex(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = invquaternionx(from) * vector
+@inline invrotatey(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = invquaterniony(from) * vector
+@inline invrotatez(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = invquaternionz(from) * vector
+
+export findroots
+
+export AXIS2_X, AXIS2_Y, AXIS3_X, AXIS3_Y, AXIS3_Z
+export perpto, isparallel, isorthogonal, isantiparallel
+export quaternion, quaternionx, quaterniony, quaternionz, invquaternionx, invquaterniony, invquaternionz
+export rotate, invrotate, rotatex, rotatey, rotatez, invrotatex, invrotatey, invrotatez
