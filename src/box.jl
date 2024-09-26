@@ -26,6 +26,7 @@ function isinside(box::Box{N}, vector::SVector{N,Float64}) where {N}
     for point in axis_vector
         @approx point < 0.0 && return false
     end
+
     for (point, axis_size) in zip(axis_vector, size(box))
         @approx point > axis_size && return false
     end
@@ -96,6 +97,7 @@ end
 function minintersection!(::MinIntersection, element::Box{2}, ray::Ray{2})
     hassize(element) || return nothing
 
+
 end
 
 
@@ -137,10 +139,26 @@ function doesintersect(box1::Box{N}, box2::Box{N}) where {N}
     return false
 end
 
-function edges(box::Box{N}) where {N}
-    hassize(box) || return SVector{N}[]
+function edges(box::Box{2})
+    hassize(box) || return SVector{2}[]
     box_coordinates = coordinates(box)
     map(i -> (box_coordinates[i-1], box_coordinates[i]), 2:length(box_coordinates))
+end
+
+function edges(box::Box{3})
+    hassize(box) || return SVector{3}[]
+    box_coordinates = coordinates(box)
+
+    edges = map(i -> (box_coordinates[i-1], box_coordinates[i]), 2:length(box_coordinates))
+
+    missing_edges = [
+        (box_coordinates[2], box_coordinates[7]),
+        (box_coordinates[3], box_coordinates[8]),
+        (box_coordinates[4], box_coordinates[9]),
+    ]
+
+    append!(edges, missing_edges...)
+    edges
 end
 
 function doesintersect(edge1::NTuple{2,SVector{2,Float64}}, edge2::NTuple{2,SVector{2,Float64}})
@@ -162,7 +180,7 @@ function doesintersect(edge1::NTuple{2,SVector{2,Float64}}, edge2::NTuple{2,SVec
     return false
 end
 
-onsegment(p::SVector{2,Float64}, q::SVector{2,Float64}, r::SVector{2,Float64}) = approx(min(p[1], r[1]), <=, q[1], <=, max(p[1], r[1])) && approx(min(p[2], r[2]), ≤, q[2], ≤, max(p[2], r[2]))
+onsegment(p::SVector{2,Float64}, q::SVector{2,Float64}, r::SVector{2,Float64}) = @approx min(p[1], r[1]) <= q[1] <= max(p[1], r[1]) && min(p[2], r[2]) ≤ q[2] ≤ max(p[2], r[2])
 
 function orientation(p::SVector{2,Float64}, q::SVector{2,Float64}, r::SVector{2,Float64})
     val = (q[2] - p[2]) * (r[1] - q[1]) - (q[1] - p[1]) * (r[2] - q[2])

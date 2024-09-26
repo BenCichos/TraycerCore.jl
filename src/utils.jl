@@ -70,13 +70,17 @@ export rotate, invrotate
 @inline quaterniony(from::SVector{3,<:Real}) = quaternion(from, AXIS3_Y)
 @inline quaternionz(from::SVector{3,<:Real}) = quaternion(from, AXIS3_Z)
 
-@inline invquaternionx(from::SVector{2,<:Real}) = quaternion(from, AXIS2_X)
-@inline invquaterniony(from::SVector{2,<:Real}) = quaternion(from, AXIS2_Y)
+@inline invquaternionx(from::SVector{2,<:Real}) = quaternion(AXIS2_X, from)
+@inline invquaterniony(from::SVector{2,<:Real}) = quaternion(AXIS2_Y, from)
 
-@inline invquaternionx(from::SVector{3,<:Real}) = quaternion(from, AXIS3_X)
-@inline invquaterniony(from::SVector{3,<:Real}) = quaternion(from, AXIS3_Y)
-@inline invquaternionz(from::SVector{3,<:Real}) = quaternion(from, AXIS3_Z)
+@inline invquaternionx(from::SVector{3,<:Real}) = quaternion(AXIS3_X, from)
+@inline invquaterniony(from::SVector{3,<:Real}) = quaternion(AXIS3_Y, from)
+@inline invquaternionz(from::SVector{3,<:Real}) = quaternion(AXIS3_Z, from)
 
 @inline rotx(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaternionx(from) * vector
 @inline roty(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaterniony(from) * vector
 @inline rotz(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = quaternionz(from) * vector
+
+@inline invrotx(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = invquaternionx(from) * vector
+@inline invroty(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = invquaterniony(from) * vector
+@inline invrotz(vector::SVector{N,<:Real}, from::SVector{N,<:Real}) where {N} = invquaternionz(from) * vector
