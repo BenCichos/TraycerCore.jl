@@ -1,4 +1,3 @@
-
 function trace(os::OpticalSystem{N}; depth::Int=10, threshold_intensity::Float64=1e-5) where {N}
     @assert depth >= 0 "Depth must be a non-negative integer"
     @assert threshold_intensity >= 0 "threshold_intensity must be a non-negative number"
