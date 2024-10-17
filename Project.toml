@@ -11,6 +11,7 @@ Refraction = "a85f0e34-77fa-494d-9980-9155dceff362"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
+ApproximateRelations = "0.1.1"
 Refraction = "0.1.5"
 StaticArrays = "1.9.7"
 julia = "1.10"
