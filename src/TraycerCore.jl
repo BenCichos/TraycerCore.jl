@@ -14,8 +14,7 @@ using ApproximateRelations
 
 import Quaternions: Quaternion
 import Refraction: transmittance
-import Base: show, convert, push!, append!, iterate, :(*), getproperty
-
+import Base: show, convert, push!, append!, iterate, :(*), getproperty, empty!
 
 include("utils.jl")
 include("ray.jl")

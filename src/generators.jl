@@ -52,3 +52,6 @@ function RayGenerator(origins::Vector{SVector{N,T}}, directions::Vector{SVector{
 end
 
 Rays(args...) = RayGenerator(args...) |> collect
+
+export SVectorGenerator, SVectors
+export RayGenerator, Rays

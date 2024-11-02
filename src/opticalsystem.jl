@@ -1,9 +1,9 @@
 @kwdef struct OpticalSystem{N}
-    elements::Vector{AbstractOpticalElement{N}}
+    elements::Vector{AbstractOpticalElement{N}} = AbstractOpticalElement{N}[]
     rays::Vector{Ray{N}} = Ray{N}[]
     tracedrays::Vector{TracedRay{N}} = TracedRay{N}[]
 
-    function OpticalSystem(elements::Vector{AbstractOpticalElement{N}}, rays::Vector{Ray{N}}=Ray{N}[], tracedrays::Vector{TracedRay{N}}=TracedRay{N}[]) where {N}
+    function OpticalSystem(elements::Vector{AOE}, rays::Vector{Ray{N}}=Ray{N}[], tracedrays::Vector{TracedRay{N}}=TracedRay{N}[]) where {N, AOE <: AbstractOpticalElement{N}}
         new{N}(elements, rays, tracedrays)
     end
 end
